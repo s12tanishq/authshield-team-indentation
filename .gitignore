@@ -1,0 +1,14 @@
+# Python Cache (Prevents Chrome Extension crashes)
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+env/
+.venv/
+
+# macOS System Files
+.DS_Store
+.AppleDouble
+.LSOverride
