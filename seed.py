@@ -76,8 +76,8 @@ from datetime import datetime
 
 SEED_PORTALS = [
     {
-        "domain":      "erp.college.edu",
-        "dom_hash":    "PLACEHOLDER_REPLACE_WITH_REAL_SHA256_HASH_FROM_CONTENT_JS",
+        "domain":      "studentserp.ycce.edu",
+        "dom_hash":    "744a98daa95ce02d818eea8564cabe8acaeb47b476317915fb54ce0251d19c3c",
         "portal_name": "College ERP Portal",
     },
     # ── Add more authentic portals here as the registry grows ────────
