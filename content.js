@@ -377,6 +377,7 @@
         const cleaned         = cleanElement(form);
         const structuralString = serializeStructure(cleaned);
         const hash            = await sha256Hex(structuralString);
+        console.log("[AuthShield] Computed Hash:", hash);
 
         const response = await verifyHash(domain, hash);
 
