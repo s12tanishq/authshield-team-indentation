@@ -1,0 +1,106 @@
+body {
+  margin: 0;
+  width: 300px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  background: #ffffff;
+  color: #1a1a1a;
+}
+
+#popup-container {
+  padding: 16px;
+}
+
+#popup-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 12px;
+  color: #1a1a1a;
+}
+
+#status-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+#status-text {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* Status: SAFE — green tint */
+.status-safe {
+  background: #e1f5ee;
+}
+.status-safe #status-text {
+  color: #0f6e56;
+}
+
+/* Status: DANGER — red tint */
+.status-danger {
+  background: #fcebeb;
+}
+.status-danger #status-text {
+  color: #a32d2d;
+}
+
+/* Status: UNKNOWN — amber tint */
+.status-unknown {
+  background: #faeeda;
+}
+.status-unknown #status-text {
+  color: #854f0b;
+}
+
+#status-message {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #5f5e5a;
+  margin: 0 0 12px;
+}
+
+#domain-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  border-top: 1px solid #e5e5e0;
+  padding-top: 10px;
+  margin-bottom: 12px;
+}
+
+#domain-label {
+  color: #888780;
+}
+
+#domain-value {
+  color: #5f5e5a;
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#refresh-button {
+  width: 100%;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 12px;
+  border: 1px solid #d3d1c7;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1a1a1a;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+#refresh-button:hover {
+  background: #f1efe8;
+}
+
+#refresh-button:active {
+  transform: scale(0.98);
+}
