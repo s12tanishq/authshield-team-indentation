@@ -4,12 +4,13 @@
  * Responsibilities:
  *   1. Scan the page for login forms.
  *   2. Strip dynamic/volatile attributes (CSRF tokens, dynamic ids, values, etc.)
+ *      and remove volatile third-party subtrees (captchas, iframes) entirely.
  *   3. Serialize the cleaned structural markup into a standardized string.
  *   4. Compute a SHA-256 hash of that string using the native Web Crypto API.
  *   5. Send { action: "VERIFY_DOM_HASH", domain, hash } to background.js.
  *   6. On response:
  *        - "DANGER"  -> Red banner + disable all form inputs.
- *        - "UNKNOWN" -> Yellow advisory banner, form remains enabled.
+ *        - "UNKNOWN" -> Amber advisory banner, form remains enabled.
  *        - "SAFE"    -> No UI action (popup reflects status only).
  */
 
@@ -20,9 +21,6 @@
   // Configuration
   // ------------------------------------------------------------------
 
-  // Attributes considered "dynamic" / non-structural — stripped before hashing
-  // so the same form structure always produces the same hash regardless of
-  // CSRF tokens, session values, or auto-generated ids.
   const DYNAMIC_ATTRS = new Set([
     "value",
     "id",
@@ -44,8 +42,6 @@
     "data-testid",
   ]);
 
-  // Attribute name patterns that are auto-generated/dynamic even if not in the
-  // explicit list above (e.g. Vue scoped ids, Angular bindings, etc.)
   const DYNAMIC_ATTR_PATTERNS = [
     /^data-v-/i,       // Vue scoped ids
     /^ng-/i,           // Angular bindings
@@ -54,8 +50,6 @@
     /^data-reactroot$/i,
   ];
 
-  // ONLY these attributes are kept after cleaning — everything else is dropped.
-  // This keeps the hash purely structural and stable across deployments.
   const STRUCTURAL_ATTRS_ALLOWLIST = new Set([
     "type",
     "action",
@@ -68,11 +62,34 @@
     "minlength",
   ]);
 
+  // Elements matching these selectors are removed ENTIRELY before hashing —
+  // not just attribute-stripped. These are third-party widgets (captchas,
+  // embedded iframes) that load asynchronously and may or may not have
+  // finished injecting their own markup by the time we scan, making their
+  // mere presence/absence a source of hash instability unrelated to the
+  // actual login form's identity.
+  const VOLATILE_SUBTREE_SELECTORS = [
+    ".cf-turnstile",
+    "iframe",
+    "[data-sitekey]",
+    "template",
+  ];
+
   const VERIFY_ENDPOINT_ACTION = "VERIFY_DOM_HASH";
 
-  // Banner element IDs — used to avoid duplicate injection on re-runs.
   const DANGER_BANNER_ID  = "authshield-danger-banner";
   const UNKNOWN_BANNER_ID = "authshield-unknown-banner";
+
+  // ------------------------------------------------------------------
+  // Inline icons (no external CDN dependency — content scripts run on
+  // arbitrary third-party pages, so we never fetch external resources)
+  // ------------------------------------------------------------------
+
+  const ICON_SHIELD_X = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="9.5" y1="9" x2="14.5" y2="14"/><line x1="14.5" y1="9" x2="9.5" y2="14"/></svg>`;
+
+  const ICON_ALERT = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+
+  const ICON_CLOSE = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
 
 
   // ------------------------------------------------------------------
@@ -85,12 +102,9 @@
   }
 
   function isLikelyLoginForm(form) {
-    // Primary signal: any form with a password field is a login form.
     const passwordFields = form.querySelectorAll('input[type="password"]');
     if (passwordFields.length > 0) return true;
 
-    // Fallback heuristic: text/email input + login-related keywords.
-    // Catches portals that lazy-reveal the password field after email entry.
     const hasCredentialField = form.querySelector(
       'input[type="email"], input[type="text"], input[name*="user" i], input[name*="email" i]'
     );
@@ -100,20 +114,27 @@
     );
   }
 
-
   // ------------------------------------------------------------------
   // 2. Cleaning
   // ------------------------------------------------------------------
 
   /**
-   * Deep-clones the form element and strips all dynamic/volatile attributes
-   * so the structural fingerprint is stable across page loads.
+   * Deep-clones the form element, removes volatile third-party subtrees
+   * (captchas, iframes), then strips all dynamic/volatile attributes so
+   * the structural fingerprint is stable across page loads.
    * The live DOM is NEVER mutated — always working on a clone.
    */
   function cleanElement(node) {
     const clone = node.cloneNode(true);
+    removeVolatileSubtrees(clone);
     stripDynamicAttributes(clone);
     return clone;
+  }
+
+  function removeVolatileSubtrees(root) {
+    VOLATILE_SUBTREE_SELECTORS.forEach((selector) => {
+      root.querySelectorAll(selector).forEach((el) => el.remove());
+    });
   }
 
   function stripDynamicAttributes(root) {
@@ -122,7 +143,6 @@
     for (const el of elements) {
       if (!(el instanceof Element)) continue;
 
-      // Always remove current state/values regardless of allowlist.
       el.removeAttribute("value");
       el.removeAttribute("checked");
       el.removeAttribute("selected");
@@ -136,8 +156,6 @@
         const matchesDynamicPattern = DYNAMIC_ATTR_PATTERNS.some((re) => re.test(lower));
         const isAllowlisted         = STRUCTURAL_ATTRS_ALLOWLIST.has(lower);
 
-        // Drop the attribute if it is explicitly dynamic, matches a dynamic
-        // pattern, OR is simply not in the structural allowlist.
         if (isExplicitlyDynamic || matchesDynamicPattern || !isAllowlisted) {
           el.removeAttribute(attrName);
         }
@@ -145,16 +163,10 @@
     }
   }
 
-
   // ------------------------------------------------------------------
   // 3. Serialization
   // ------------------------------------------------------------------
 
-  /**
-   * Produces a whitespace-normalized, attribute-order-stable structural string.
-   * Two structurally identical forms will always serialize identically,
-   * giving the same SHA-256 hash regardless of server-side rendering differences.
-   */
   function serializeStructure(cleanedEl) {
     normalizeAttributeOrder(cleanedEl);
     const raw = cleanedEl.outerHTML || "";
@@ -164,8 +176,6 @@
       .trim();
   }
 
-  // Sort each element's attributes alphabetically so attribute insertion
-  // order differences between page loads don't affect the final hash.
   function normalizeAttributeOrder(root) {
     const elements = [root, ...root.querySelectorAll("*")];
     for (const el of elements) {
@@ -181,7 +191,6 @@
     }
   }
 
-
   // ------------------------------------------------------------------
   // 4. Hashing (Web Crypto API — no external libraries)
   // ------------------------------------------------------------------
@@ -195,65 +204,10 @@
       .join("");
   }
 
-
   // ------------------------------------------------------------------
   // 5. Messaging to background.js
-  //
-  // ⚠ CONFIRMATION NEEDED FROM PERSON A (background.js) — READ BEFORE MERGING
   // ------------------------------------------------------------------
 
-  /**
-   * Sends the domain + hash to background.js and waits for a response.
-   *
-   * This function covers BOTH possible implementations of background.js.
-   * Read the two cases below and confirm with Person A which one applies.
-   *
-   * ─────────────────────────────────────────────────────────────────
-   * CASE 1 — background.js responds ASYNCHRONOUSLY (fetch to backend)
-   * ─────────────────────────────────────────────────────────────────
-   * This is the EXPECTED case given the architecture (background.js
-   * awaits a fetch to http://localhost:8000/verify before responding).
-   *
-   * For this to work, Person A's onMessage listener MUST include
-   * "return true" to keep the message channel open while fetch completes.
-   *
-   * Expected background.js structure:
-   *
-   *   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-   *     if (message.action === "VERIFY_DOM_HASH") {
-   *       fetch("http://localhost:8000/verify", {
-   *         method: "POST",
-   *         headers: { "Content-Type": "application/json" },
-   *         body: JSON.stringify({
-   *           domain:   message.domain,
-   *           dom_hash: message.hash
-   *         })
-   *       })
-   *       .then(res => res.json())
-   *       .then(data => sendResponse(data))
-   *       .catch(()  => sendResponse({ status: "UNKNOWN", message: "Backend unreachable." }));
-   *
-   *       return true; // ← CRITICAL: without this line, the channel closes
-   *     }               //   before fetch resolves and content.js gets undefined.
-   *   });
-   *
-   * If "return true" is missing → response will be undefined here →
-   * NO banner will ever appear, even on real phishing pages.
-   *
-   * ─────────────────────────────────────────────────────────────────
-   * CASE 2 — background.js responds SYNCHRONOUSLY (no async fetch)
-   * ─────────────────────────────────────────────────────────────────
-   * If Person A's implementation is fully synchronous (e.g. using a
-   * cached result or pre-fetched data), "return true" is not needed
-   * and the current sendMessage callback below works as-is.
-   *
-   * No changes needed in content.js for Case 2.
-   * ─────────────────────────────────────────────────────────────────
-   *
-   * ACTION FOR PERSON A:
-   *   Confirm which case applies and ensure "return true" is present
-   *   in the onMessage listener if Case 1 (async fetch) is used.
-   */
   function verifyHash(domain, hash) {
     return new Promise((resolve, reject) => {
       try {
@@ -264,8 +218,6 @@
               reject(new Error(chrome.runtime.lastError.message));
               return;
             }
-            // If response is undefined here, Person A's background.js is
-            // likely missing "return true" in the onMessage listener (Case 1).
             resolve(response);
           }
         );
@@ -275,42 +227,86 @@
     });
   }
 
-
   // ------------------------------------------------------------------
   // 6. Banner Injection & Form Lockdown
   // ------------------------------------------------------------------
 
-  /**
-   * DANGER — Red banner + form fully disabled.
-   * Triggered when: status === "DANGER"
-   * The cloned portal's DOM hash matches a known authentic portal's hash
-   * but the domain does not — clear credential harvesting attempt.
-   */
-  function injectDangerBanner(message) {
-    if (document.getElementById(DANGER_BANNER_ID)) return; // prevent duplicates
-
+  function buildBanner({ id, bg, fg, icon, title, message }) {
     const banner = document.createElement("div");
-    banner.id = DANGER_BANNER_ID;
+    banner.id = id;
     banner.setAttribute("role", "alert");
     banner.style.cssText = [
-      "position:fixed",
-      "top:0",
-      "left:0",
-      "right:0",
-      "z-index:2147483647",
-      "background:#c0392b",
-      "color:#ffffff",
-      "font-family:Arial, sans-serif",
-      "font-size:15px",
-      "font-weight:bold",
-      "text-align:center",
-      "padding:12px 16px",
-      "box-shadow:0 2px 6px rgba(0,0,0,0.5)",
+      "position:fixed", "top:0", "left:0", "right:0", "z-index:2147483647",
+      `background:${bg}`, `color:${fg}`,
+      "font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif",
+      "display:flex", "align-items:center", "gap:12px",
+      "padding:12px 16px", "box-shadow:0 2px 6px rgba(0,0,0,0.4)",
     ].join(";");
 
-    banner.textContent = `⛔ AuthShield Warning: ${message}`;
+    const iconWrap = document.createElement("span");
+    iconWrap.style.cssText = "flex-shrink:0;display:flex;";
+    iconWrap.innerHTML = icon;
+
+    const textWrap = document.createElement("div");
+    textWrap.style.cssText = "flex:1;text-align:left;";
+
+    const titleEl = document.createElement("div");
+    titleEl.style.cssText = "font-size:14px;font-weight:600;";
+    titleEl.textContent = title;
+
+    const msgEl = document.createElement("div");
+    msgEl.style.cssText = "font-size:12px;opacity:0.9;margin-top:2px;";
+    msgEl.textContent = message;
+
+    textWrap.appendChild(titleEl);
+    textWrap.appendChild(msgEl);
+
+    const closeBtn = document.createElement("span");
+    closeBtn.setAttribute("role", "button");
+    closeBtn.setAttribute("aria-label", "Dismiss");
+    closeBtn.style.cssText = "flex-shrink:0;cursor:pointer;display:flex;opacity:0.85;";
+    closeBtn.innerHTML = ICON_CLOSE;
+    closeBtn.addEventListener("click", () => {
+      banner.remove();
+      if (document.body) document.body.style.marginTop = "0";
+    });
+
+    banner.appendChild(iconWrap);
+    banner.appendChild(textWrap);
+    banner.appendChild(closeBtn);
+    return banner;
+  }
+
+  function injectDangerBanner(message) {
+    if (document.getElementById(DANGER_BANNER_ID)) return;
+
+    const banner = buildBanner({
+      id: DANGER_BANNER_ID,
+      bg: "#7f1d1d",
+      fg: "#ffffff",
+      icon: ICON_SHIELD_X,
+      title: "AuthShield: Cloned portal detected",
+      message: message || "Do not enter your credentials on this page.",
+    });
+
     document.documentElement.appendChild(banner);
-    if (document.body) document.body.style.marginTop = "48px";
+    if (document.body) document.body.style.marginTop = banner.offsetHeight + "px";
+  }
+
+  function injectUnknownBanner(message) {
+    if (document.getElementById(UNKNOWN_BANNER_ID)) return;
+
+    const banner = buildBanner({
+      id: UNKNOWN_BANNER_ID,
+      bg: "#78350f",
+      fg: "#ffffff",
+      icon: ICON_ALERT,
+      title: "AuthShield: Unrecognized portal",
+      message: message || "We don't have a baseline for this site yet — proceed with caution.",
+    });
+
+    document.documentElement.appendChild(banner);
+    if (document.body) document.body.style.marginTop = banner.offsetHeight + "px";
   }
 
   function disableForm(form) {
@@ -322,45 +318,6 @@
     form.style.opacity      = "0.6";
     form.style.pointerEvents = "none";
   }
-
-  /**
-   * UNKNOWN — Yellow advisory banner, form remains fully enabled.
-   * Triggered when: status === "UNKNOWN"
-   *
-   * CHANGE FROM ORIGINAL DESIGN (confirm with team if needed):
-   * Originally, UNKNOWN status had no UI action (popup-only).
-   * Updated to show a yellow advisory banner so users are warned about
-   * portals not yet registered in the AuthShield database — these could
-   * be new phishing sites not yet catalogued, or legitimate new portals.
-   * The form is intentionally left enabled since this is advisory only.
-   */
-  function injectUnknownBanner(message) {
-    if (document.getElementById(UNKNOWN_BANNER_ID)) return; // prevent duplicates
-
-    const banner = document.createElement("div");
-    banner.id = UNKNOWN_BANNER_ID;
-    banner.setAttribute("role", "alert");
-    banner.style.cssText = [
-      "position:fixed",
-      "top:0",
-      "left:0",
-      "right:0",
-      "z-index:2147483647",
-      "background:#f39c12",
-      "color:#ffffff",
-      "font-family:Arial, sans-serif",
-      "font-size:15px",
-      "font-weight:bold",
-      "text-align:center",
-      "padding:12px 16px",
-      "box-shadow:0 2px 6px rgba(0,0,0,0.4)",
-    ].join(";");
-
-    banner.textContent = message;
-    document.documentElement.appendChild(banner);
-    if (document.body) document.body.style.marginTop = "48px";
-  }
-
 
   // ------------------------------------------------------------------
   // Orchestration
@@ -374,16 +331,13 @@
 
     for (const form of forms) {
       try {
-        const cleaned         = cleanElement(form);
+        const cleaned          = cleanElement(form);
         const structuralString = serializeStructure(cleaned);
-        const hash            = await sha256Hex(structuralString);
-        console.log("[AuthShield] Computed Hash:", hash);
+        const hash              = await sha256Hex(structuralString);
+        console.log("[AuthShield DEBUG]", domain, hash);
 
         const response = await verifyHash(domain, hash);
 
-        // Guard: if response is undefined, background.js messaging is broken.
-        // Most likely cause: missing "return true" in background.js onMessage
-        // listener (see Case 1 comment in verifyHash() above).
         if (!response) {
           console.warn(
             "[AuthShield] Received undefined response from background.js.",
@@ -393,20 +347,10 @@
         }
 
         if (response.status === "DANGER") {
-          // Confirmed phishing/cloned portal — lock down the form immediately.
-          injectDangerBanner(
-            response.message || "Cloned portal detected. Do not enter credentials."
-          );
+          injectDangerBanner(response.message);
           disableForm(form);
-
         } else if (response.status === "UNKNOWN") {
-          // Portal not found in registry — advisory warning only.
-          // Form remains enabled (user can still proceed at their own risk).
-          // See injectUnknownBanner() for reasoning behind this change.
-          injectUnknownBanner(
-            response.message || "⚠ AuthShield: Unrecognized portal detected. Avoid entering credentials."
-          );
-
+          injectUnknownBanner(response.message);
         }
         // "SAFE" -> No banner, no action. Popup reflects the SAFE status.
 
@@ -416,7 +360,6 @@
     }
   }
 
-
   // ------------------------------------------------------------------
   // Entry Point
   // ------------------------------------------------------------------
@@ -425,7 +368,6 @@
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", scanAndVerify);
     } else {
-      // DOM already ready (e.g. script injected after load).
       scanAndVerify();
     }
   }
