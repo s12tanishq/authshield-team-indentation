@@ -17,16 +17,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   verifyDomHash(message.domain, message.hash)
-    .then((result) => {
-      storeStatusForTab(tabId, message.domain, result);
+    .then(async (result) => {
+      await storeStatusForTab(tabId, message.domain, result);
       sendResponse(result);
     })
-    .catch((err) => {
+    .catch(async (err) => {
       const fallback = {
         status: "UNKNOWN",
         message: "Verification failed: backend unreachable."
       };
-      storeStatusForTab(tabId, message.domain, fallback);
+      await storeStatusForTab(tabId, message.domain, fallback);
       sendResponse(fallback);
     });
 
