@@ -10,10 +10,17 @@ body {
   padding: 16px;
 }
 
+#popup-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
 #popup-title {
   font-size: 16px;
   font-weight: 600;
-  margin: 0 0 12px;
+  margin: 0;
   color: #1a1a1a;
 }
 
@@ -26,35 +33,24 @@ body {
   margin-bottom: 10px;
 }
 
+#status-icon svg {
+  display: block;
+}
+
 #status-text {
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.3px;
 }
 
-/* Status: SAFE — green tint */
-.status-safe {
-  background: #e1f5ee;
-}
-.status-safe #status-text {
-  color: #0f6e56;
-}
+.status-safe { background: #e1f5ee; }
+.status-safe #status-icon, .status-safe #status-text { color: #0f6e56; }
 
-/* Status: DANGER — red tint */
-.status-danger {
-  background: #fcebeb;
-}
-.status-danger #status-text {
-  color: #a32d2d;
-}
+.status-danger { background: #fcebeb; }
+.status-danger #status-icon, .status-danger #status-text { color: #a32d2d; }
 
-/* Status: UNKNOWN — amber tint */
-.status-unknown {
-  background: #faeeda;
-}
-.status-unknown #status-text {
-  color: #854f0b;
-}
+.status-unknown { background: #faeeda; }
+.status-unknown #status-icon, .status-unknown #status-text { color: #854f0b; }
 
 #status-message {
   font-size: 13px;
@@ -63,25 +59,40 @@ body {
   margin: 0 0 12px;
 }
 
-#domain-row {
+.info-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: 12px;
+  padding: 6px 0;
+}
+
+.info-row:first-of-type {
   border-top: 1px solid #e5e5e0;
   padding-top: 10px;
+}
+
+.info-row:last-of-type {
   margin-bottom: 12px;
 }
 
-#domain-label {
+.info-label {
   color: #888780;
 }
 
-#domain-value {
+.domain-chip {
+  background: #f1efe8;
   color: #5f5e5a;
-  max-width: 190px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  max-width: 180px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+#checked-value {
+  color: #5f5e5a;
 }
 
 #refresh-button {
@@ -95,6 +106,10 @@ body {
   color: #1a1a1a;
   cursor: pointer;
   transition: background 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 #refresh-button:hover {
