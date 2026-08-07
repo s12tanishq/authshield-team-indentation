@@ -1,0 +1,145 @@
+/* Google Font Import matching real YCCE ERP inspect tab */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --primary-color: #00a8ff;
+  --text-dark: #172b4d;
+  --text-muted: #6c757d;
+  --bg-main: #fafbfd;
+}
+
+body {
+  font-family: 'IBM Plex Sans', sans-serif !important;
+  background-color: var(--bg-main) !important;
+  color: var(--text-dark);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Card Container Matching MasterSoft Layout */
+.login-card {
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.03);
+  padding: 35px 30px;
+  margin-top: 50px;
+  border: 1px solid #edf2f9;
+}
+
+/* Typography Corrections */
+h2.text-primary {
+  color: #3858f9 !important;
+  font-weight: 700 !important;
+  font-size: 26px;
+  letter-spacing: -0.3px;
+  margin-bottom: 4px;
+}
+
+p.text-muted {
+  font-size: 13px !important;
+  color: #7a889b !important;
+  font-weight: 400;
+}
+
+.form-label {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #2d3748 !important;
+  margin-bottom: 6px;
+}
+
+/* Input Fields & Group Styling */
+.input-group-text {
+  border-right: none !important;
+  background-color: transparent !important;
+  color: #a0aec0 !important;
+  border-color: #e2e8f0 !important;
+  padding-left: 14px;
+}
+
+.form-control {
+  border-left: none !important;
+  border-color: #e2e8f0 !important;
+  font-size: 14px !important;
+  color: #2d3748 !important;
+  padding: 10px 12px;
+}
+
+.form-control::placeholder {
+  color: #cbd5e0;
+  font-size: 13px;
+}
+
+.form-control:focus {
+  box-shadow: none !important;
+  border-color: #cbd5e0 !important;
+}
+
+/* Troubleshoot / Forgot Password Link */
+.hover-warning {
+  color: #718096 !important;
+  font-size: 12px !important;
+  font-weight: 500;
+}
+
+.hover-warning:hover {
+  color: #f6ad55 !important;
+}
+
+/* Sign In Button */
+.btn-info {
+  background-color: #00a8ff !important;
+  border-color: #00a8ff !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  padding: 10px 16px !important;
+  border-radius: 4px !important;
+  transition: all 0.2s ease;
+}
+
+.btn-info:hover {
+  background-color: #0097e6 !important;
+  border-color: #0097e6 !important;
+}
+
+/* Cloudflare Captcha Box Mock */
+.mock-cloudflare {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 15px 0 20px 0;
+}
+
+.cf-success-text {
+  color: #15803d;
+  font-weight: 600;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Footer Section */
+.ft-bar {
+  text-align: center;
+  font-size: 12px;
+  color: #718096;
+  padding: 15px 0;
+  background: #ffffff;
+  border-top: 1px solid #edf2f9;
+}
+
+.ft-bar a {
+  color: #718096;
+  text-decoration: none;
+}

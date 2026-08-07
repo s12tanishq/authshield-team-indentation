@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VNIT Student Portal Login</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body, html {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      background-color: #1c1e21;
+    }
+
+    .container {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* Left Banner Image Section */
+    .left-section {
+      flex: 1;
+      position: relative;
+      /* Replace 'background.jpg' with your local campus image file path if available */
+      background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.4)), 
+                  url('https://vnitaims.vnit.ac.in/mproaims/assets/images/slider/vimg4.jpeg') no-repeat center center/cover;
+    }
+
+    /* Top Left Circular College Crest / Logo */
+    .logo-container {
+      position: absolute;
+      top: 25px;
+      left: 25px;
+      width: 85px;
+      height: 85px;
+      background: #ffffff;
+      border-radius: 50%;
+      border: 3px solid #7d1c1c;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      z-index: 10;
+    }
+
+    /* Custom SVG Emblem matching the emblem style */
+    .logo-container svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Right Login Form Section */
+    .right-section {
+      flex: 1;
+      background-color: #1c1e21;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 40px 20px 10px 20px;
+      color: #ffffff;
+      position: relative;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 380px;
+      margin: auto 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .input-group {
+      position: relative;
+      width: 100%;
+      margin-bottom: 15px;
+    }
+
+    .input-group input, 
+    .input-group select {
+      width: 100%;
+      height: 42px;
+      padding: 8px 38px 8px 12px;
+      border: 1px solid #d0d0d0;
+      border-radius: 4px;
+      font-size: 14px;
+      outline: none;
+      background-color: #ffffff;
+      color: #333333;
+    }
+
+    .input-group select {
+      appearance: none;
+      -webkit-appearance: none;
+      background: #ffffff url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%333333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") no-repeat right 10px center/14px;
+      cursor: pointer;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .input-row .input-group {
+      flex: 1;
+      margin-bottom: 0;
+    }
+
+    .icon-btn {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #777777;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+    }
+
+    .icon-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    .links-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-top: 5px;
+      margin-bottom: 20px;
+    }
+
+    .links-row a {
+      text-decoration: none;
+      color: #1a73e8;
+    }
+
+    .links-row a:hover {
+      text-decoration: underline;
+    }
+
+    .links-row .forgot-link {
+      color: #757575;
+      cursor: not-allowed;
+    }
+
+    .submit-btn {
+      width: 100%;
+      height: 42px;
+      background-color: #b3c5dd;
+      color: #1c1e21;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .submit-btn:hover {
+      background-color: #9eb3cf;
+    }
+
+    .browser-note {
+      color: #ff3333;
+      font-size: 11px;
+      text-align: center;
+      line-height: 1.5;
+      margin-top: 25px;
+      font-weight: 500;
+    }
+
+    /* Footer Branding Bar */
+    .footer {
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 10px;
+      background-color: #ffffff;
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      padding: 6px 20px;
+    }
+
+    .footer-logo {
+      width: 28px;
+      height: 28px;
+      background-color: #0d47a1;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 16px;
+      font-family: sans-serif;
+    }
+
+    .footer-text {
+      text-align: left;
+      color: #333;
+      font-size: 11px;
+      line-height: 1.2;
+    }
+
+    .footer-text strong {
+      display: block;
+      color: #000;
+      font-size: 13px;
+    }
+
+    @media (max-width: 850px) {
+      .container {
+        flex-direction: column;
+      }
+      .left-section {
+        height: 40%;
+      }
+      .right-section {
+        height: 60%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Left Section with Campus Image & Circular Logo -->
+    <div class="left-section">
+      <div class="logo-container" title="Visvesvaraya National Institute of Technology">
+        <!-- Built-in Crest / Logo Representation -->
+        <svg viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="48" fill="#ffffff" stroke="#800000" stroke-width="3"/>
+          <circle cx="50" cy="50" r="41" fill="none" stroke="#800000" stroke-width="1.5" stroke-dasharray="3 2"/>
+          <!-- Crest Arch Text Representation -->
+          <path id="textPath" d="M 18 50 A 32 32 0 0 1 82 50" fill="none"/>
+          <text font-size="6.5" font-weight="bold" fill="#800000" text-anchor="middle">
+            <textPath href="#textPath" startOffset="50%">VISVESVARAYA NATIONAL INSTITUTE OF TECHNOLOGY</textPath>
+          </text>
+          <!-- Center Emblem Symbols -->
+          <polygon points="50,22 55,32 66,32 57,39 60,50 50,43 40,50 43,39 34,32 45,32" fill="#d4af37" />
+          <path d="M 32 68 Q 50 58 68 68 L 65 72 Q 50 64 35 72 Z" fill="#0056b3" />
+          <rect x="42" y="52" width="16" height="12" fill="#800000" rx="1"/>
+          <!-- Bottom Hindi / Subtext -->
+          <text x="50" y="85" font-size="6" font-weight="bold" fill="#800000" text-anchor="middle">नागपुर / NAGPUR</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Right Login Section -->
+    <div class="right-section">
+      <div class="login-box">
+        <form id="loginForm" onsubmit="handleSubmit(event)">
+          
+          <!-- Login ID Input -->
+          <div class="input-group">
+            <input type="text" placeholder="Login Id *" required autocomplete="username">
+            <button type="button" class="icon-btn" title="Enter your allocated Login ID">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-6h2v6zm0-8h-2V8h2v2z"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Password Input -->
+          <div class="input-group">
+            <input type="password" id="passwordField" placeholder="Password *" required autocomplete="current-password">
+            <button type="button" class="icon-btn" onclick="togglePasswordVisibility()" title="Toggle Password Visibility">
+              <svg id="eyeIcon" viewBox="0 0 24 24">
+                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Academic Year & Session Controls -->
+          <div class="input-row">
+            <div class="input-group">
+              <select required>
+                <option value="" disabled selected>Academic Year *</option>
+                <option value="2026-27">2026-27</option>
+                <option value="2025-26">2025-26</option>
+                <option value="2024-25">2024-25</option>
+                <option value="2023-24">2023-24</option>
+                <option value="2022-23">2022-23</option>
+                <option value="2021-22">2021-22</option>
+                <option value="2020-21">2020-21</option>
+                <option value="2019-20">2019-20</option>
+                <option value="2018-19">2018-19</option>
+                <option value="2017-18">2017-18</option>
+              </select>
+            </div>
+
+            <div class="input-group">
+              <select required>
+                <option value="" disabled selected>Session *</option>
+                <option value="Winter">Winter</option>
+                <option value="Summer">Summer</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Action Links -->
+          <div class="links-row">
+            <a href="#">New Student Registration</a>
+            <span class="forgot-link">Forgot Password</span>
+          </div>
+
+          <!-- Login Button -->
+          <button type="submit" class="submit-btn">Login</button>
+
+          <!-- Warning Notice -->
+          <div class="browser-note">
+            Note:- Site Best version view on Google Chrome<br>
+            version 53, Mozilla Firefox Version 45.0 and Above
+          </div>
+        </form>
+      </div>
+
+      <!-- Footer Branding -->
+      <div class="footer">
+        <div class="footer-logo">m</div>
+        <div class="footer-text">
+          <strong>Micropro</strong>
+          Empowering Digital Transformation
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Toggle Password Field Masking
+    function togglePasswordVisibility() {
+      const field = document.getElementById('passwordField');
+      if (field.type === 'password') {
+        field.type = 'text';
+      } else {
+        field.type = 'password';
+      }
+    }
+
+    // Form submission handler
+    function handleSubmit(e) {
+      e.preventDefault();
+      alert('Login request submitted successfully.');
+    }
+  </script>
+</body>
+</html>

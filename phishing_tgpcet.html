@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TGPCET ERP PORTAL</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #f2f2f2;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 440px;
+      position: relative;
+    }
+
+    /* Top Gradient Header Pill */
+    .portal-header {
+      background: linear-gradient(135deg, #6c1edb 0%, #3283ff 100%);
+      color: #ffffff;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      padding: 14px 28px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(50, 131, 255, 0.35);
+      z-index: 2;
+      margin-bottom: -22px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    /* Main Login Card */
+    .card {
+      background-color: #ffffff;
+      width: 100%;
+      padding: 50px 35px 35px 35px;
+      border-radius: 4px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
+      z-index: 1;
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1e293b;
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="password"] {
+      width: 100%;
+      height: 42px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: #334155;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-group input::placeholder {
+      color: #94a3b8;
+    }
+
+    .form-group input:focus {
+      border-color: #0056b3;
+      box-shadow: 0 0 0 2px rgba(0, 86, 179, 0.1);
+    }
+
+    /* Checkbox Row */
+    .remember-me {
+      display: flex;
+      align-items: center;
+      margin-top: 15px;
+      margin-bottom: 25px;
+    }
+
+    .remember-me input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #0056b3;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+
+    .remember-me label {
+      font-size: 13px;
+      color: #1e293b;
+      margin-left: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* Submit Button */
+    .btn-submit {
+      width: 100%;
+      height: 44px;
+      background-color: #0056b3;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn-submit:hover {
+      background-color: #004494;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrapper">
+    <!-- Header Badge -->
+    <div class="portal-header">
+      TGPCET ERP PORTAL
+    </div>
+
+    <!-- Login Box -->
+    <div class="card">
+      <div class="title">Login to your account</div>
+      
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <!-- Username -->
+        <div class="form-group">
+          <label for="username">User Name</label>
+          <input type="text" id="username" placeholder="Enter username" required autocomplete="username">
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Enter password" required autocomplete="current-password">
+        </div>
+
+        <!-- Keep me logged in -->
+        <div class="remember-me">
+          <input type="checkbox" id="remember" checked>
+          <label for="remember">Keep me logged in</label>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn-submit">Sign in</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function handleLogin(e) {
+      e.preventDefault();
+      alert('Sign in submitted.');
+    }
+  </script>
+</body>
+</html>
